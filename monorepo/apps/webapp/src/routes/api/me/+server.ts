@@ -1,10 +1,9 @@
+import { API_BASE_URL } from '$env/static/private';
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 
 export const GET: RequestHandler = async (event) => {
-	// console.log(event.cookies.get('token'));
-
-	const res = await fetch('http://127.0.0.1:8787/auth/me', {
+	const res = await fetch(`${API_BASE_URL}/auth/me`, {
 		headers: {
 			authorization: `Bearer ${event.cookies.get('token')}`
 		}

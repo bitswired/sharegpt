@@ -1,0 +1,9 @@
+name = "webmardi-chat-demo"
+compatibility_date = "2023-01-01"
+
+
+[[ d1_databases ]]
+binding = "DB" # i.e. if you set this to "DB", it will be available in your Worker at `env.DB`
+database_id = "d8f786f0-e030-414e-8a48-7903fc6becdb"
+database_name = "webmardi-chat-demo"
+migrations_dir = "migrations"

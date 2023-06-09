@@ -1,0 +1,21 @@
+{
+  "name": "api",
+  "scripts": {
+    "dev": "wrangler dev src/index.ts",
+    "deploy": "wrangler deploy --minify src/index.ts",
+    "db:codegen": "DATABASE_URL=.wrangler/state/v3/d1/d8f786f0-e030-414e-8a48-7903fc6becdb/db.sqlite kysely-codegen"
+  },
+  "dependencies": {
+    "@tsndr/cloudflare-worker-jwt": "^2.2.1",
+    "better-sqlite3": "^8.4.0",
+    "hono": "^3.2.2",
+    "kysely": "^0.25.0",
+    "kysely-d1": "^0.3.0",
+    "zod": "^3.21.4"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20230518.0",
+    "kysely-codegen": "^0.10.0",
+    "wrangler": "^3.0.1"
+  }
+}

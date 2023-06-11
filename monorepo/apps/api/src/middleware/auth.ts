@@ -4,30 +4,44 @@ import { Context, Next } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Bindings, Variables } from "../bindings";
 
-export async function authMiddleware(
-  c: Context<{ Bindings: Bindings; Variables: Variables }>,
-  next: Next
-) {
-  // Extract bearer token from authorization header
-  const token = c.req.headers.get("authorization")?.split(" ")[1] ?? "";
-  // Verify token
-  const isOk = await jwt.verify(token, c.env.SECRET);
+export const authMiddleware =
+  (mode: "bearer" | "query" = "bearer") =>
+  async (
+    c: Context<{ Bindings: Bindings; Variables: Variables }>,
+    next: Next
+  ) => {
+    try {
+      // Extract bearer token from authorization header
+      let token: string;
+      if (mode === "bearer") {
+        token = c.req.headers.get("authorization")?.split(" ")[1] ?? "";
+      } else if (mode === "query") {
+        token = c.req.query("token") ?? "";
+      } else {
+        throw new Error("Invalid mode");
+      }
+      // Verify token
+      const isOk = await jwt.verify(token, c.env.SECRET);
 
-  const { payload } = jwt.decode(token);
+      const { payload } = jwt.decode(token);
 
-  const dbClient = c.get("dbClient");
+      const dbClient = c.get("dbClient");
 
-  const user = await dbClient
-    .selectFrom("user")
-    .selectAll()
-    .where("id", "=", payload.id)
-    .executeTakeFirstOrThrow();
+      const user = await dbClient
+        .selectFrom("user")
+        .selectAll()
+        .where("id", "=", payload.id)
+        .executeTakeFirstOrThrow();
 
-  if (!isOk || !user) {
-    throw new HTTPException(401, { message: "Invalid token" });
-  }
+      if (!isOk || !user) {
+        throw new HTTPException(401, { message: "Invalid token" });
+      }
 
-  c.set("user", user as any);
+      c.set("user", user as any);
 
-  await next();
-}
+      await next();
+    } catch (e) {
+      console.error(e);
+      throw new HTTPException(401, { message: "Unauthorized" });
+    }
+  };

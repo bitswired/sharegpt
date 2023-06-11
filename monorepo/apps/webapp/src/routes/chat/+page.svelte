@@ -1,10 +1,11 @@
 <script lang="ts">
-	import Prompt from '$lib/components/chat/Prompt.svelte';
 	import { useMeStore } from '$lib/stores';
 	import type { PageData } from './$types';
 
+	import Message from '$lib/components/chat/Message.svelte';
+	import Prompt from '$lib/components/chat/Prompt.svelte';
+
 	import { PUBLIC_API_BASE_URL } from '$env/static/public';
-	import { Avatar } from '@skeletonlabs/skeleton';
 
 	export let data: PageData;
 
@@ -16,25 +17,11 @@
 	const meStore = useMeStore();
 
 	let prompt = '';
-	async function handleSend() {
+
+	async function updateMessages(chatId: number) {
 		if (!$meStore) {
 			return;
 		}
-
-		const res = await fetch(`${PUBLIC_API_BASE_URL}/chat`, {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-				Authorization: `Bearer ${$meStore.token}`
-			},
-			body: JSON.stringify({ message: prompt })
-		});
-
-		if (!res.ok) {
-			throw new Error('Failed to send message');
-		}
-
-		const { chatId } = await res.json();
 
 		const { chat, messages } = await fetch(`${PUBLIC_API_BASE_URL}/chat/${chatId}`, {
 			method: 'GET',
@@ -43,7 +30,49 @@
 			}
 		}).then((res) => res.json());
 
+		console.log('UP{DATE', chat, messages);
+
 		state = { chat, messages };
+	}
+
+	async function handleSend() {
+		if (!$meStore) {
+			return;
+		}
+
+		if (!state) {
+			const res = await fetch(`${PUBLIC_API_BASE_URL}/chat`, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					Authorization: `Bearer ${$meStore.token}`
+				},
+				body: JSON.stringify({ message: prompt })
+			});
+
+			if (!res.ok) {
+				throw new Error('Failed to send message');
+			}
+
+			const { chatId } = await res.json();
+
+			await updateMessages(parseInt(chatId));
+		} else {
+			const res = await fetch(`${PUBLIC_API_BASE_URL}/chat`, {
+				method: 'PUT',
+				headers: {
+					'Content-Type': 'application/json',
+					Authorization: `Bearer ${$meStore.token}`
+				},
+				body: JSON.stringify({ message: prompt, chatId: state.chat.id })
+			});
+
+			if (!res.ok) {
+				throw new Error('Failed to send message');
+			}
+
+			await updateMessages(parseInt(state.chat.id));
+		}
 
 		prompt = '';
 
@@ -55,8 +84,13 @@
 	let message = '';
 
 	function openSSE() {
+		if (!state) {
+			throw new Error('No state');
+		}
 		//Create an event source
-		es = new EventSource('http://localhost:8787/chat');
+		es = new EventSource(
+			`${PUBLIC_API_BASE_URL}/chat/sse?chatId=${state.chat.id}&token=${$meStore?.token}`
+		);
 
 		// Listen to the event
 		es.addEventListener('message', (event) => {
@@ -71,6 +105,10 @@
 			console.log('error');
 			console.log(e);
 			es.close();
+			if (state) {
+				updateMessages(state?.chat.id);
+				message = '';
+			}
 		};
 	}
 
@@ -89,29 +127,19 @@
 			<p />
 			<p class="text-[4em] font-bold gradient-heading p-8">Webmardi Chat</p>
 		{:else}
-			<div class="h-full w-full flex flex-col items-center">
-				{#each state.messages as message}
-					<div class="bg-primary-900 bg-opacity-30 w-full">
-						<div class="flex gap-4 w-[800px] p-8 m-auto items-start">
-							<Avatar initials="JI" background="bg-primary-500" width="w-8" />
-							<div class="w-full">
-								{message.text}
-							</div>
-						</div>
-					</div>
+			<div class="h-full w-full flex flex-col items-center overflow-y-auto flex-grow">
+				{#each state.messages as message (message.id)}
+					<Message message={message.text} type={message.type} />
 				{/each}
-				<div class="bg-secondary-900 bg-opacity-30 w-full">
-					<div class="flex gap-4 w-[800px] p-8 m-auto items-start">
-						<Avatar initials="AI" background="bg-secondary-500" width="w-8" />
-						<div class="w-full">
-							{message}
-						</div>
-					</div>
-				</div>
+
+				{#if message.length > 0}
+					<Message {message} type="ai" />
+					<!-- content here -->
+				{/if}
 			</div>
 		{/if}
 
-		<div class="w-[1000px] pb-4">
+		<div class="w-[1000px] pb-4 sticky bottom-0">
 			<Prompt bind:value={prompt} send={handleSend} />
 		</div>
 	</div>

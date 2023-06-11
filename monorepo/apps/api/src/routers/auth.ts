@@ -16,7 +16,7 @@ export const authRouter = new Hono<{
   Variables: Variables;
 }>();
 
-authRouter.use("/me", authMiddleware);
+authRouter.use("/me", authMiddleware());
 authRouter.get("/me", async (c) => {
   const user = c.get("user");
   if (!user) {

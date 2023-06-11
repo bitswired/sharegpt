@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { Bindings, Variables } from "../bindings";
-import { CreateChatInput } from "../dtos/chat";
+import { AppendHumanMessageInput, CreateChatInput } from "../dtos/chat";
 import { authMiddleware } from "../middleware/auth";
 
 export const chatRouter = new Hono<{
@@ -9,7 +9,27 @@ export const chatRouter = new Hono<{
   Variables: Variables;
 }>();
 
-chatRouter.get("/", async (c) => {
+chatRouter.use("/sse", authMiddleware("query"));
+chatRouter.get("/sse", async (c) => {
+  const user = c.get("user");
+  const dbClient = c.get("dbClient");
+  const chatId = c.req.query("chatId");
+
+  if (!user?.id) {
+    throw new HTTPException(401, { message: "Invalid token" });
+  }
+
+  if (!chatId) {
+    throw new HTTPException(400, { message: "Chat id not provided" });
+  }
+
+  const messages = await dbClient
+    .selectFrom("message")
+    .selectAll()
+    .where("chat_id", "=", parseInt(chatId))
+    .orderBy("created_at", "asc")
+    .execute();
+
   console.log("Start");
   const apiUrl = "https://api.openai.com/v1/chat/completions";
   const fetchOptions = {
@@ -20,13 +40,11 @@ chatRouter.get("/", async (c) => {
     },
     body: JSON.stringify({
       stream: true,
-      model: "gpt-4",
-      messages: [
-        {
-          role: "user",
-          content: "Explain me AI in 2 paragraph",
-        },
-      ],
+      model: "gpt-3.5-turbo",
+      messages: messages.map((m) => ({
+        role: m.type === "human" ? "user" : "assistant",
+        content: m.text,
+      })),
     }),
   };
   const res = await fetch(apiUrl, fetchOptions);
@@ -60,13 +78,32 @@ chatRouter.get("/", async (c) => {
     },
   };
 
-  const transformerFinal = {
+  let message = "";
+  const transformerFinal: Transformer = {
     transform(chunk: any, controller: TransformStreamDefaultController) {
       const delta = chunk?.choices?.[0]?.delta.content;
       if (delta) {
         console.log(delta);
+        message += delta;
         controller.enqueue(`data: ${delta}\n\n`);
       }
+    },
+
+    async flush(controller: TransformStreamDefaultController) {
+      console.log("FLUSH");
+      console.log(message);
+
+      const m = await dbClient
+        .insertInto("message")
+        .values({
+          chat_id: parseInt(chatId),
+          user_id: user?.id,
+          text: message,
+          type: "ai",
+          created_at: new Date().toISOString(),
+        })
+        .returning("id")
+        .executeTakeFirstOrThrow();
     },
   };
 
@@ -91,7 +128,43 @@ chatRouter.get("/", async (c) => {
   });
 });
 
-chatRouter.use("/", authMiddleware);
+chatRouter.use("/", authMiddleware());
+chatRouter.put("/", async (c) => {
+  const input = AppendHumanMessageInput.parse(await c.req.json());
+
+  const dbClient = c.get("dbClient");
+  const user = c.get("user");
+
+  if (!user) {
+    throw new HTTPException(401, { message: "Invalid token" });
+  }
+
+  const chat = await dbClient
+    .selectFrom("chat")
+    .where("id", "=", input.chatId)
+    .selectAll()
+    .executeTakeFirstOrThrow();
+
+  if (!chat.id) {
+    throw new HTTPException(500, { message: "Chat not created" });
+  }
+
+  const message = await dbClient
+    .insertInto("message")
+    .values({
+      chat_id: chat.id,
+      user_id: user.id,
+      text: input.message,
+      type: "human",
+      created_at: new Date().toISOString(),
+    })
+    .returning("id")
+    .executeTakeFirstOrThrow();
+
+  return c.json({ messageId: chat.id });
+});
+
+chatRouter.use("/", authMiddleware());
 chatRouter.post("/", async (c) => {
   const input = CreateChatInput.parse(await c.req.json());
 
@@ -131,7 +204,7 @@ chatRouter.post("/", async (c) => {
   return c.json({ chatId: chat.id });
 });
 
-chatRouter.use("/:id", authMiddleware);
+chatRouter.use("/:id", authMiddleware());
 chatRouter.get("/:id", async (c) => {
   const dbClient = c.get("dbClient");
   const user = c.get("user");

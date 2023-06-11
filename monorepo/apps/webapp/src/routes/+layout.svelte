@@ -4,16 +4,41 @@
 	// If you have source.organizeImports set to true in VSCode, then it will auto change this ordering
 	import '@skeletonlabs/skeleton/styles/skeleton.css';
 	// Most of your app wide CSS should be put in this file
+	import { goto } from '$app/navigation';
 	import Me from '$lib/components/header/Me.svelte';
 	import Navigation from '$lib/components/header/Navigation.svelte';
 	import { useMeStore } from '$lib/stores';
-	import { AppBar, AppShell, LightSwitch } from '@skeletonlabs/skeleton';
+	import { AppBar, AppShell, LightSwitch, Toast, toastStore } from '@skeletonlabs/skeleton';
 	import { onMount } from 'svelte';
 	import '../app.postcss';
 
 	const meStore = useMeStore();
 
 	onMount(async () => {
+		const { fetch: originalFetch } = window;
+
+		window.fetch = async (...args) => {
+			console.log('Intercepted Fetch');
+			let [resource, config] = args;
+
+			// request interceptor starts
+			console.log('Before Fetch');
+			console.log('Resource', resource, config?.method);
+			const response = await originalFetch(resource, config);
+			console.log('After Fetch');
+
+			if (response.status === 401) {
+				toastStore.trigger({
+					message: 'Your session has expired. Please login again.',
+					background: 'variant-filled-error'
+				});
+				goto('/auth/login');
+			}
+
+			// response interceptor here
+			return response;
+		};
+
 		const x = await fetch('/api/me');
 		if (x.ok) {
 			meStore.set(await x.json());
@@ -50,3 +75,4 @@
 	<!-- Page Route Content -->
 	<slot />
 </AppShell>
+<Toast position="tr" />

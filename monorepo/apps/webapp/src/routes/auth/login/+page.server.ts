@@ -1,7 +1,7 @@
 import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
-import { API_BASE_URL } from '$env/static/private';
+import { PUBLIC_API_BASE_URL } from '$env/static/public';
 
 export const load = (async () => {
 	return {};
@@ -14,7 +14,7 @@ export const actions = {
 		const name = data.get('name');
 		const password = data.get('password');
 
-		const res = await fetch(`${API_BASE_URL}/auth/login`, {
+		const res = await fetch(`${PUBLIC_API_BASE_URL}/auth/login`, {
 			method: 'POST',
 			body: JSON.stringify({
 				name,

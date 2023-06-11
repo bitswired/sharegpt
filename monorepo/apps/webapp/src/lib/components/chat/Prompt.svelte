@@ -1,17 +1,17 @@
 <script lang="ts">
-	export let currentMessage = '';
-	export let addMessage: () => void;
+	export let value = '';
+	export let send: () => void;
 </script>
 
 <div class="input-group input-group-divider grid-cols-[auto_1fr_auto] rounded-container-token">
 	<button class="input-group-shim">+</button>
 	<textarea
-		bind:value={currentMessage}
+		bind:value
 		class="bg-transparent border-0 ring-0"
 		name="prompt"
 		id="prompt"
 		placeholder="Write a message..."
-		rows="1"
+		rows="2"
 	/>
-	<button class="variant-filled-primary" on:click={addMessage}>Send</button>
+	<button class="variant-filled-primary" on:click={send}>Send</button>
 </div>

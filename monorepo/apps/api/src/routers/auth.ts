@@ -8,46 +8,24 @@ import { LoginInput, SignupInput } from "../dtos/auth";
 
 import jwt from "@tsndr/cloudflare-worker-jwt";
 import { HTTPException } from "hono/http-exception";
-
-type Variables = {
-  user: { id: number; name: string; password: string };
-};
+import { Bindings, Variables } from "../bindings";
+import { authMiddleware } from "../middleware/auth";
 
 export const authRouter = new Hono<{
   Bindings: Bindings;
   Variables: Variables;
 }>();
 
-authRouter.use("/me", async (c, next) => {
-  // Extract bearer token from authorization header
-  const token = c.req.headers.get("authorization")?.split(" ")[1] ?? "";
-  // Verify token
-  const isOk = await jwt.verify(token, c.env.SECRET);
-
-  const { payload } = jwt.decode(token);
-
-  const client = new Kysely<DB>({
-    dialect: new D1Dialect({ database: c.env.DB }),
-  });
-
-  const user = await client
-    .selectFrom("user")
-    .selectAll()
-    .where("id", "=", payload.id)
-    .executeTakeFirstOrThrow();
-
-  if (!isOk || !user) {
+authRouter.use("/me", authMiddleware);
+authRouter.get("/me", async (c) => {
+  const user = c.get("user");
+  if (!user) {
     throw new HTTPException(401, { message: "Invalid token" });
   }
 
-  c.set("user", user as any);
+  const { name } = user;
 
-  await next();
-});
-authRouter.get("/me", async (c) => {
-  const user = c.get("user");
-
-  return c.json(user);
+  return c.json({ name });
 });
 
 authRouter.post("/login", async (c) => {

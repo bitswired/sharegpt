@@ -5,6 +5,7 @@
 	import '@skeletonlabs/skeleton/styles/skeleton.css';
 	// Most of your app wide CSS should be put in this file
 	import { goto } from '$app/navigation';
+	import { PUBLIC_API_BASE_URL } from '$env/static/public';
 	import Me from '$lib/components/header/Me.svelte';
 	import Navigation from '$lib/components/header/Navigation.svelte';
 	import { useMeStore } from '$lib/stores';
@@ -21,9 +22,20 @@
 			console.log('Intercepted Fetch');
 			let [resource, config] = args;
 
+			if (resource.toString().includes(PUBLIC_API_BASE_URL)) {
+				config = {
+					...config,
+					headers: {
+						...config?.headers,
+						Authorization: `Bearer ${$meStore?.token}`
+					}
+				};
+			}
+
+			console.log(config);
+
 			// request interceptor starts
 			console.log('Before Fetch');
-			console.log('Resource', resource, config?.method);
 			const response = await originalFetch(resource, config);
 			console.log('After Fetch');
 

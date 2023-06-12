@@ -238,3 +238,62 @@ chatRouter.get("/:id", async (c) => {
 
   return c.json({ chat, messages });
 });
+
+chatRouter.use("/", authMiddleware());
+chatRouter.get("/", async (c) => {
+  const dbClient = c.get("dbClient");
+  const user = c.get("user");
+
+  if (!user) {
+    throw new HTTPException(401, { message: "Invalid token" });
+  }
+
+  const chats = await dbClient
+    .selectFrom("chat")
+    .selectAll()
+    .where("user_id", "=", user.id)
+    .orderBy("created_at", "desc")
+    .selectAll()
+    .execute();
+
+  return c.json({ chats });
+});
+
+chatRouter.use("/:id", authMiddleware());
+chatRouter.delete("/:id", async (c) => {
+  const dbClient = c.get("dbClient");
+  const user = c.get("user");
+
+  const chatId = c.req.param("id");
+
+  console.log("JDIDIDIDIDI");
+
+  console.log(user);
+
+  if (!user) {
+    throw new HTTPException(401, { message: "Invalid token" });
+  }
+
+  const chat = await dbClient
+    .selectFrom("chat")
+    .selectAll()
+    .where("id", "=", parseInt(chatId))
+    .selectAll()
+    .executeTakeFirst();
+  if (!chat) {
+    throw new HTTPException(404, { message: "Chat not found" });
+  }
+
+  await dbClient
+    .deleteFrom("message")
+    .where("chat_id", "=", parseInt(chatId))
+    .execute();
+
+  const deletedChat = await dbClient
+    .deleteFrom("chat")
+    .where("id", "=", parseInt(chatId))
+    .returning("id")
+    .executeTakeFirstOrThrow();
+
+  return c.json({ chatId: deletedChat.id });
+});

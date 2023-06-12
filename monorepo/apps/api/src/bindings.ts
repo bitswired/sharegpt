@@ -10,4 +10,5 @@ export type Bindings = {
   DB: D1Database;
   SECRET: string;
   OPENAI_API_KEY: string;
+  CHAT_ROOM: DurableObjectNamespace;
 };

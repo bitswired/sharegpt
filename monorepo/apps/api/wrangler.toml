@@ -7,3 +7,10 @@ binding = "DB" # i.e. if you set this to "DB", it will be available in your Work
 database_id = "d8f786f0-e030-414e-8a48-7903fc6becdb"
 database_name = "webmardi-chat-demo"
 migrations_dir = "migrations"
+
+[durable_objects]
+bindings = [{name = "CHAT_ROOM", class_name = "ChatRoom"}]
+
+[[migrations]]
+tag = "v1" # Should be unique for each entry
+new_classes = ["ChatRoom"]

@@ -23,6 +23,24 @@ chatRouter.get("/sse", async (c) => {
     throw new HTTPException(400, { message: "Chat id not provided" });
   }
 
+  const rateLimiterId = c.env.RATE_LIMITER.idFromName(user.id.toString());
+  const rateLimiter = c.env.RATE_LIMITER.get(rateLimiterId);
+  // acquire a lock
+  const lock = await rateLimiter.fetch("https://dummy/generation", {
+    method: "POST",
+  });
+
+  if (!lock.ok) {
+    if (lock.status === 429) {
+      console.log("RATE LIMITED");
+      throw new HTTPException(429, { message: "Too many requests" });
+    } else {
+      console.log(`HTTP error! status: ${lock.status} ${lock.statusText}`);
+      throw new Error(`HTTP error! status: ${lock.status} ${lock.statusText}`);
+    }
+  }
+  console.log("LOCKED");
+
   const messages = await dbClient
     .selectFrom("message")
     .selectAll()
@@ -104,6 +122,21 @@ chatRouter.get("/sse", async (c) => {
         })
         .returning("id")
         .executeTakeFirstOrThrow();
+
+      const unlock = await rateLimiter.fetch(
+        "https://dummy/generation/unlock",
+        {
+          method: "POST",
+        }
+      );
+
+      if (!unlock.ok) {
+        console.log(
+          `HTTP error! status: ${unlock.status} ${unlock.statusText}`
+        );
+        throw new HTTPException(500, { message: "Unlock failed" });
+      }
+      console.log("UNLOCKED");
     },
   };
 
@@ -128,7 +161,7 @@ chatRouter.get("/sse", async (c) => {
   });
 });
 
-chatRouter.use("/", authMiddleware());
+chatRouter.put("/", authMiddleware());
 chatRouter.put("/", async (c) => {
   const input = AppendHumanMessageInput.parse(await c.req.json());
 
@@ -178,7 +211,7 @@ chatRouter.post("/", async (c) => {
   const chat = await dbClient
     .insertInto("chat")
     .values({
-      name: "New chat",
+      name: input.message.slice(0, 20) + " ...",
       user_id: user.id,
       created_at: new Date().toISOString(),
     })

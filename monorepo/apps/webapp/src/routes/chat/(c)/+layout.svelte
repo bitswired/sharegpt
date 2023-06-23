@@ -16,9 +16,9 @@
 	}
 </script>
 
-<div class="grid grid-cols-12 h-full">
+<div class="grid grid-cols-12 h-[calc(100vh-64px)]">
 	<div
-		class="col-span-2 dark:bg-surface-900 bg-slate-300 h-screen flex flex-col p-4 gap-4 overflow-x-scroll"
+		class="col-span-2 dark:bg-surface-900 bg-surface-300 flex flex-col p-4 gap-4 overflow-y-auto"
 	>
 		<p class="h3">Chat History</p>
 
@@ -26,23 +26,20 @@
 
 		{#each data.chats as chat (chat.id)}
 			<div class="rounded-lg p-2 bg-surface-500 flex gap-4 items-center" animate:flip>
-				<p>
-					{chat.id}
-				</p>
 				<p class="" transition:fade>
 					<a href={`/chat/${chat.id}`} class="underline">{chat.name}</a>
 				</p>
 
 				<button
 					type="button"
-					class="btn-icon btn-icon-sm variant-filled"
+					class="btn-icon btn-icon-sm variant-filled ml-auto"
 					on:click={() => handleDeleteChat(chat.id)}>X</button
 				>
 			</div>
 		{/each}
 	</div>
 
-	<div class="col-span-10 flex flex-col justify-between items-center">
+	<div class="col-span-10 flex flex-col justify-between items-center overflow-y-auto">
 		<slot />
 	</div>
 </div>

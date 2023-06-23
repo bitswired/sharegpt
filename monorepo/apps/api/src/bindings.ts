@@ -11,4 +11,6 @@ export type Bindings = {
   SECRET: string;
   OPENAI_API_KEY: string;
   CHAT_ROOM: DurableObjectNamespace;
+  RATE_LIMITER: DurableObjectNamespace;
+  SHAREGPTKV: KVNamespace;
 };

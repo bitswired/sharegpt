@@ -1,10 +1,11 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import CompletionChat from '$lib/components/chat/CompletionChat.svelte';
+	import LiveChat from '$lib/components/chat/LiveChat.svelte';
+	import Pulse from '$lib/components/chat/Pulse.svelte';
 	import { initLiveState, type LiveState } from '$lib/components/chat/live-utils';
-	import Prompt from '$lib/components/chat/Prompt.svelte';
 	import { useMeStore } from '$lib/stores';
-	import { fade } from 'svelte/transition';
+	import { toastStore } from '@skeletonlabs/skeleton';
 
 	const meStore = useMeStore();
 
@@ -32,9 +33,30 @@
 				throw new Error('No live state');
 			}
 
+			if (m.error) {
+				toastStore.trigger({
+					message: 'The owner has not yet joined or the session is ended',
+					background: 'variant-filled-error'
+				});
+				liveState.websocket.close();
+				liveState = null;
+				return;
+			}
+
+			if (m.end) {
+				toastStore.trigger({
+					message: 'Live session ended',
+					background: 'variant-filled-warning'
+				});
+				liveState.websocket.close();
+				liveState = null;
+				return;
+			}
+
 			if (m?.message.type === 'sidechat') {
 				liveState.messages = [...liveState.messages, m];
 			}
+
 			if (m?.message.type === 'mainchat-aiupdate') {
 				if (!state) {
 					state = {
@@ -51,6 +73,7 @@
 						messages: [m.message.message]
 					};
 				} else {
+					console.log([...state.messages, m.message.message]);
 					state.messages = [...state.messages, m.message.message];
 				}
 				message = '';
@@ -60,52 +83,22 @@
 </script>
 
 {#if !liveState}
-	<button class="btn btn-lg variant-filled-primary" on:click={joinLive}> JOIN </button>
+	<div class="flex justify-center items-center h-full w-full">
+		<button class="btn btn-xl variant-filled-primary" on:click={joinLive}>CLICK TO JOIN </button>
+	</div>
 {:else}
-	<div class="grid grid-cols-2 h-full">
-		<div class="flex flex-col justify-between items-center">
-			<p>a</p>
+	<div class="grid grid-cols-2 h-[calc(100vh-64px)]">
+		<div class="flex flex-col items-center shadow-lg bg-surface-700 overflow-y-auto">
+			<div class="flex gap-4 items-center">
+				<div class="h2 p-4 font-bold">Live Chat Completion</div>
+				<Pulse />
+			</div>
 
 			<CompletionChat bind:state bind:message />
-
-			<p>a</p>
 		</div>
 
-		<div class="bg-surface-700">
-			<div class="flex flex-col p-4 h-full gap-2">
-				<button
-					class="btn btn-md variant-filled-primary"
-					on:click={() => {
-						if (liveState) {
-							liveState.sideChatOpened = false;
-						}
-					}}
-				>
-					Hide
-				</button>
-
-				{#each liveState.messages as m (m.timestamp)}
-					<div transition:fade class="p-2 shadow-sm bg-surface-600 rounded-md">
-						<p>{m.message.text}</p>
-					</div>
-				{/each}
-
-				<div class="mt-auto">
-					<Prompt
-						bind:value={liveState.currentMessage}
-						send={() => {
-							liveState?.websocket.send(
-								JSON.stringify({
-									message: {
-										type: 'sidechat',
-										text: liveState.currentMessage
-									}
-								})
-							);
-						}}
-					/>
-				</div>
-			</div>
+		<div class="bg-surface-900 overflow-y-auto">
+			<LiveChat bind:liveState canHide={false} isViewer={true} />
 		</div>
 	</div>
 {/if}

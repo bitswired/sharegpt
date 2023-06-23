@@ -7,6 +7,7 @@ import { chatRouter } from "./routers/chat";
 import { liveRouter } from "./routers/live";
 
 export { ChatRoom } from "./durable-objects/chat";
+export { RateLimiter } from "./durable-objects/rate-limiter";
 
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 

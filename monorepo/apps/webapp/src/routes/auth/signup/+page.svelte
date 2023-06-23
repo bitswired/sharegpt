@@ -9,8 +9,6 @@
 	const meStore = useMeStore();
 </script>
 
-{$meStore}
-
 <form
 	class="flex flex-col gap-4 w-[600px] dark:bg-surface-900 rounded-lg p-8 m-auto mt-[2em] shadow-lg bg-surface-100"
 	method="post"
@@ -24,7 +22,7 @@
 		};
 	}}
 >
-	<h1 class="h1 gradient-heading">Welcome to Webmardi Chat Demo</h1>
+	<h1 class="h1 gradient-heading">Welcome to ShareGPT</h1>
 
 	<h2 class="h2">Login</h2>
 

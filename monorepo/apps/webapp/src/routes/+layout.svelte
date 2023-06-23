@@ -64,7 +64,9 @@
 		<!-- App Bar -->
 		<AppBar gridColumns="grid-cols-3" slotDefault="place-self-center" slotTrail="place-content-end">
 			<svelte:fragment slot="lead">
-				<strong class="text-xl uppercase">Webmardi Chat</strong>
+				<strong class="text-xl uppercase">
+					<a href="/"> ShareGPT</a>
+				</strong>
 			</svelte:fragment>
 
 			<Navigation />

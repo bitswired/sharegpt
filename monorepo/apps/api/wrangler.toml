@@ -9,8 +9,17 @@ database_name = "webmardi-chat-demo"
 migrations_dir = "migrations"
 
 [durable_objects]
-bindings = [{name = "CHAT_ROOM", class_name = "ChatRoom"}]
+bindings = [{name = "CHAT_ROOM", class_name = "ChatRoom"}, {name = "RATE_LIMITER", class_name = "RateLimiter"}]
 
 [[migrations]]
 tag = "v1" # Should be unique for each entry
 new_classes = ["ChatRoom"]
+
+[[migrations]]
+tag = "v2" # Should be unique for each entry
+new_classes = ["RateLimiter"]
+
+[[kv_namespaces]]
+binding = "SHAREGPTKV"
+id = "75e6cdb15a604f0eac66027a5bd0392f"
+preview_id = "2775a82cbddd4a9696bbe2ec5eead965"

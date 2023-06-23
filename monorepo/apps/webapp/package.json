@@ -36,5 +36,9 @@
 		"typescript": "^5.0.0",
 		"vite": "^4.3.0"
 	},
-	"type": "module"
+	"type": "module",
+	"dependencies": {
+		"@microsoft/fetch-event-source": "^2.0.1",
+		"snarkdown": "^2.0.0"
+	}
 }

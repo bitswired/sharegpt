@@ -73,6 +73,16 @@ authRouter.post("/signup", async (c) => {
     dialect: new D1Dialect({ database: c.env.DB }),
   });
 
+  const x = await client
+    .selectFrom("user")
+    .selectAll()
+    .where("name", "=", input.name)
+    .executeTakeFirst();
+
+  if (x) {
+    throw new HTTPException(422, { message: "Name already used" });
+  }
+
   const res = await client
     .insertInto("user")
     .values({
@@ -87,4 +97,20 @@ authRouter.post("/signup", async (c) => {
   }
 
   return c.json({ message: `User created, id: ${res?.id}` });
+});
+
+authRouter.use("/logout", authMiddleware());
+authRouter.post("/logout", async (c) => {
+  const user = c.get("user");
+  if (!user) {
+    throw new HTTPException(401, { message: "Invalid token" });
+  }
+
+  const token = c.req.headers.get("authorization")?.split(" ")[1];
+
+  await c.env.SHAREGPTKV.put(`token/evicted/${token}`, `${Date.now()}`, {
+    expirationTtl: 60 * 60 * 2,
+  });
+
+  return c.json({ message: "Logged out" });
 });

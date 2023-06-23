@@ -20,6 +20,12 @@ export const authMiddleware =
       } else {
         throw new Error("Invalid mode");
       }
+
+      const x = await c.env.SHAREGPTKV.get(`token/evicted/${token}`);
+      if (x) {
+        throw new HTTPException(401, { message: "Token evicted" });
+      }
+
       // Verify token
       const isOk = await jwt.verify(token, c.env.SECRET);
 

@@ -5,6 +5,7 @@
 	import '@skeletonlabs/skeleton/styles/skeleton.css';
 	// Most of your app wide CSS should be put in this file
 	import { goto } from '$app/navigation';
+	import { page } from '$app/stores';
 	import { PUBLIC_API_BASE_URL } from '$env/static/public';
 	import Me from '$lib/components/header/Me.svelte';
 	import Navigation from '$lib/components/header/Navigation.svelte';
@@ -44,7 +45,10 @@
 					message: 'Your session has expired. Please login again.',
 					background: 'variant-filled-error'
 				});
-				goto('/auth/login');
+
+				if ($page.url.pathname !== '/') {
+					goto('/auth/login');
+				}
 			}
 
 			// response interceptor here

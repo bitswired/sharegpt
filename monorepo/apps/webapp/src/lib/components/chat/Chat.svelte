@@ -225,7 +225,7 @@
 
 {#if state}
 	<div
-		class=" bg-surface-600 w-full h-[50px] sticky top-0 z-10 shadow-lg p-2 flex gap-4 items-center px-8"
+		class=" bg-surface-50 dark:bg-surface-600 w-full h-[50px] sticky top-0 z-10 shadow-lg p-2 flex gap-4 items-center px-8"
 	>
 		<div class="flex items-center gap-2">
 			{#if liveState}
@@ -294,7 +294,7 @@
 
 {#if liveState?.sideChatOpened}
 	<div
-		class="w-[33%] h-screen fixed top-0 right-0 bg-surface-900 z-20 overflow-y-scroll"
+		class="w-[33%] h-screen fixed top-0 right-0 bg-surface-100 dark:bg-surface-900 z-20 overflow-y-scroll"
 		transition:slide={{ axis: 'x' }}
 	>
 		<LiveChat

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { invalidateAll } from '$app/navigation';
+	import { goto, invalidateAll } from '$app/navigation';
 	import { PUBLIC_API_BASE_URL } from '$env/static/public';
 	import { flip } from 'svelte/animate';
 	import { fade } from 'svelte/transition';
@@ -12,6 +12,7 @@
 		await fetch(`${PUBLIC_API_BASE_URL}/chat/${id}`, {
 			method: 'DELETE'
 		});
+		await goto('/chat');
 		invalidateAll();
 	}
 </script>
@@ -22,10 +23,13 @@
 	>
 		<p class="h3">Chat History</p>
 
-		<a class="btn btn-md variant-filled-primary" href="/chat">+ Add Chat</a>
+		<a class="btn btn-md variant-filled-primary" href="/chat" data-sveltekit-reload>+ New Chat</a>
 
 		{#each data.chats as chat (chat.id)}
-			<div class="rounded-lg p-2 bg-surface-500 flex gap-4 items-center" animate:flip>
+			<div
+				class="rounded-lg p-2 bg-surface-200 dark:bg-surface-500 flex gap-4 items-center"
+				animate:flip
+			>
 				<p class="" transition:fade>
 					<a href={`/chat/${chat.id}`} class="underline">{chat.name}</a>
 				</p>
@@ -39,7 +43,7 @@
 		{/each}
 	</div>
 
-	<div class="col-span-10 flex flex-col justify-between items-center overflow-y-auto">
+	<div class="col-span-10 h-full flex flex-col justify-start items-center overflow-y-auto">
 		<slot />
 	</div>
 </div>

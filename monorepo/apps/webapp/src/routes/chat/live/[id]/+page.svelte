@@ -88,7 +88,7 @@
 	</div>
 {:else}
 	<div class="grid grid-cols-2 h-[calc(100vh-64px)]">
-		<div class="flex flex-col items-center shadow-lg bg-surface-700 overflow-y-auto">
+		<div class="flex flex-col items-center shadow-lg dark:bg-surface-700 overflow-y-auto">
 			<div class="flex gap-4 items-center">
 				<div class="h2 p-4 font-bold">Live Chat Completion</div>
 				<Pulse />
@@ -97,7 +97,7 @@
 			<CompletionChat bind:state bind:message />
 		</div>
 
-		<div class="bg-surface-900 overflow-y-auto">
+		<div class="dark:bg-surface-900 bg-surface-100 overflow-y-auto">
 			<LiveChat bind:liveState canHide={false} isViewer={true} />
 		</div>
 	</div>

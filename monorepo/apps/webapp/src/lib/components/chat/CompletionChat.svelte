@@ -10,8 +10,7 @@
 </script>
 
 {#if !state}
-	<p />
-	<p class="text-[4em] font-bold gradient-heading p-8">ShareGPT</p>
+	<p class="text-[4em] font-bold gradient-heading p-8 my-auto">ShareGPT</p>
 {:else}
 	<div class="w-full flex flex-col items-center overflow-y-auto">
 		{#each state.messages as message (message.id)}

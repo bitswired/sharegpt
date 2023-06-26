@@ -173,6 +173,8 @@ export class ChatRoom {
           // throw, and whatever, at least we won't accept the message. (This probably can't
           // actually happen. This is defensive coding.)
           webSocket.close(1011, "WebSocket broken.");
+          // Remove session
+          this.sessions = this.sessions.filter((s) => s.name !== session.name);
           return;
         }
 

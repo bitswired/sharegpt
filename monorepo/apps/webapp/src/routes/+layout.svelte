@@ -79,7 +79,7 @@
 				<Me />
 				<a
 					class="btn btn-sm variant-ghost-surface"
-					href="https://github.com/bitswired"
+					href="https://github.com/bitswired/sharegpt"
 					target="_blank"
 					rel="noreferrer"
 				>

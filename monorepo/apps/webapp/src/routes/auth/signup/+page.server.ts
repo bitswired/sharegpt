@@ -1,4 +1,4 @@
-import { redirect } from '@sveltejs/kit';
+import { fail, redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
 import { PUBLIC_API_BASE_URL } from '$env/static/public';
@@ -25,7 +25,7 @@ export const actions = {
 		});
 
 		if (!res.ok) {
-			return { error: res.statusText };
+			return fail(res.status, { error: await res.text() });
 		}
 
 		throw redirect(303, '/auth/login');

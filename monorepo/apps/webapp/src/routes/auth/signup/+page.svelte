@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { applyAction, enhance } from '$app/forms';
 	import { useMeStore } from '$lib/stores';
+	import { toastStore } from '@skeletonlabs/skeleton';
 	import type { ActionData, PageData } from './$types';
 
 	export let data: PageData;
@@ -14,11 +15,18 @@
 	method="post"
 	use:enhance={({ formElement, formData, action, cancel, submitter }) => {
 		return async ({ result, update }) => {
-			const res = await fetch('/api/me');
-			if (res.ok) {
-				meStore.set(await res.json());
+			if (result.type === 'failure') {
+				toastStore.trigger({
+					message: result?.data?.error ?? '',
+					background: 'variant-filled-error'
+				});
+			} else {
+				const res = await fetch('/api/me');
+				if (res.ok) {
+					meStore.set(await res.json());
+				}
+				await applyAction(result);
 			}
-			await applyAction(result);
 		};
 	}}
 >

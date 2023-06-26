@@ -260,6 +260,8 @@ chatRouter.get("/:id", async (c) => {
     .executeTakeFirst();
   if (!chat) {
     throw new HTTPException(404, { message: "Chat not found" });
+  } else if (chat.user_id !== user.id) {
+    throw new HTTPException(403, { message: "Forbidden" });
   }
 
   const messages = await dbClient

@@ -97,7 +97,7 @@
 			<CompletionChat bind:state bind:message />
 		</div>
 
-		<div class="dark:bg-surface-900 bg-surface-100 overflow-y-auto">
+		<div class="dark:bg-surface-900 bg-surface-200 overflow-y-auto">
 			<LiveChat bind:liveState canHide={false} isViewer={true} />
 		</div>
 	</div>

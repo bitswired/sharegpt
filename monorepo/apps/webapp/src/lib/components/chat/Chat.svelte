@@ -294,7 +294,7 @@
 
 {#if liveState?.sideChatOpened}
 	<div
-		class="w-[33%] h-screen fixed top-0 right-0 bg-surface-100 dark:bg-surface-900 z-20 overflow-y-scroll"
+		class="w-[33%] h-screen fixed top-0 right-0 bg-surface-200 dark:bg-surface-900 z-20 overflow-y-scroll"
 		transition:slide={{ axis: 'x' }}
 	>
 		<LiveChat

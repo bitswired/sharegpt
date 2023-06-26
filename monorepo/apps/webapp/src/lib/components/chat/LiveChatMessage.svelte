@@ -10,16 +10,19 @@
 	const meStore = useMeStore();
 
 	const isMe = message.name === $meStore?.name;
+
+	const isPrompt = message.message.isPrompt;
 </script>
 
 <div
 	transition:fade
 	class="p-2 px-4 shadow-sm rounded-md w-max max-w-[80%] flex gap-4 items-start overflow-hidden flex-wrap"
 	class:ml-auto={isMe}
-	class:bg-surface-600={!isMe}
 	class:mr-auto={!isMe}
-	class:bg-primary-600={isMe}
-	class:bg-orange-600={message.message.isPrompt}
+	class:bg-surface-300={!isMe}
+	class:bg-primary-300={isMe}
+	class:dark:bg-primary-600={isMe}
+	class:dark:bg-surface-600={!isMe}
 >
 	<div>
 		<Avatar

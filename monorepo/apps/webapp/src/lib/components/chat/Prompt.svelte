@@ -10,8 +10,11 @@
 	<button
 		class="input-group-shim"
 		on:click={secondaryAction}
-		class:bg-secondary-500={!!secondaryActionText}>{secondaryActionText ?? '+'}</button
+		class:bg-secondary-500={!!secondaryActionText}
+		class:text-white={!!secondaryActionText}
 	>
+		{secondaryActionText ?? '+'}
+	</button>
 	<textarea
 		on:keydown={(e) => {
 			if (e.shiftKey && e.key === 'Enter') {

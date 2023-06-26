@@ -53,5 +53,5 @@
 
 	<br />
 
-	<button class="btn btn-lg variant-filled-primary" type="submit">Login</button>
+	<button class="btn btn-lg variant-filled-primary" type="submit">Signup</button>
 </form>

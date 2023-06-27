@@ -57,6 +57,7 @@ chatRouter.get("/sse", async (c) => {
       authorization: `Bearer ${c.env.OPENAI_API_KEY}`,
     },
     body: JSON.stringify({
+      max_tokens: 256,
       stream: true,
       model: "gpt-3.5-turbo",
       messages: messages.map((m) => ({

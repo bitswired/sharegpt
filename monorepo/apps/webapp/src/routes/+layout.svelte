@@ -40,7 +40,7 @@
 			const response = await originalFetch(resource, config);
 			console.log('After Fetch');
 
-			if (response.status === 401) {
+			if (response.status === 401 && !$page.url.pathname.startsWith('/auth')) {
 				toastStore.trigger({
 					message: 'Your session has expired. Please login again.',
 					background: 'variant-filled-error'
